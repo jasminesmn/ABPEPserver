@@ -1,0 +1,187 @@
+
+  /* body */
+  .content-wrapper, .right-side {
+  background-color: white;
+  }
+
+  
+ #content {
+    background-color: #bee0ec;
+    border-radius: 8px;
+    color: #000000;
+    font-size: 16px;
+    font-family: monospace;
+ }
+ 
+ #cancer_table {
+      text-align: left;
+      padding: 8px;
+      width: 40%;
+      border: 1px solid #dddddd;
+ }
+ 
+ #pep_plot {
+     padding-right: 20px;
+     width: max-width;
+ }
+ 
+
+.parent {
+        display: flex;
+        flex-direction: row-reverse;
+
+
+      }
+
+.tab_cancers {
+  float: left;
+  background-color: #e9f5f9;
+  width: 30%;
+  height: 100%;
+}
+
+.tab_cancers button {
+  display: block;
+  background-color: inherit;
+  color: black;
+  padding: 22px 16px;
+  width: 100%;
+  border: none;
+  outline: none;
+  text-align: left;
+  cursor: pointer;
+  transition: 0.3s;
+  
+}
+
+.tab_cancers button:hover {
+  background-color: #bee0ec;
+}
+
+.tab_cancers button.active {
+  background-color: #bee0ec;
+}
+
+.tabcontent_cancers {
+  float: left;
+  padding: 0px 12px;
+  width: 70%;
+  height: 100%;
+  display: none; 
+}
+
+.collapsible {
+  color: #444;
+  padding: 18px;
+  width: 100%;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  border: 1px solid;
+  border-left: none;
+  border-right: none;
+  background-color: white;
+}
+
+.col_content {
+  padding: 10px;
+  display: block;
+  background-color: #f1f1f1;
+}
+
+#peps {
+  background-color: #28343c;
+  color: white;
+}
+
+#big-heading{
+  padding-bottom: 20px;
+  width: 100%;
+}
+
+
+ #sidebar {
+    background-color: #e9f5f9;
+    border-radius: 0px;
+    height: 500px;
+    border: 0px;
+    font-size: 15px;
+    position: relative;
+}
+
+
+#barplot { 
+  padding-top: 30px;
+} 
+
+#barplot_interactive {
+  padding-top: 50px;
+}
+
+#sidebar2 {
+  background-color: #e9f5f9;
+  border-radius: 0px;
+  height: 450px;
+  border: 0px;
+  font-size: 15px;
+  position: relative;
+}
+
+#scatterplot {
+  padding-top: 10px; 
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#scatterplot_interactive {
+  padding-top: 40px; 
+  padding-left: 20px;
+}
+
+#table_page {
+  background-color: #e9f5f9;
+  height: max-heigth;
+  font-size: 15px;
+  padding: 25px;
+  width: 30%;
+  display:inline-block; 
+  padding-right: 30px;
+}
+
+#substitutant_table {
+  padding-top: 20px; 
+  padding-right: 20px; 
+  padding-left: 20px;
+}
+                                                   
+td {
+  border: 1px 
+  solid #dcdcdc; 
+  border-left-style: none; 
+  border-top-style: none; 
+  border-bottom-style: none;
+}
+
+
+#sidebar3 {
+  background-color: #e9f5f9;
+  border-radius: 0px;
+  height: 450px;
+  border: 0px;
+  font-size: 15px;
+  position: relative;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
