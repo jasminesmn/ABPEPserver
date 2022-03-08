@@ -24,11 +24,12 @@ library(RMySQL)
 source('homepage_UI.R', local=TRUE)
 
 options(mysql = list(
-  "host" = "127.0.0.1",
+  "host" = "#",
   "port" = 3306,
-  "user" = "root",
-  "password" = "daterin102"
+  "user" = "#",
+  "password" = "#"
 ))
+
 databaseName <- "substitutions"
 
 db <- dbConnect(MySQL(), dbname = databaseName, host = options()$mysql$host, 
