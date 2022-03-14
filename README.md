@@ -61,7 +61,7 @@ This application is available freely on: https://rhpc.nki.nl/sites/shiny/ABPEP/.
 The user can find relevent background, method and dataset information in the 'Home' page. A broad explanation of the methods used is given for a possibly better understanding of the proteomic analysis. Dataset information of cancer types used in this analysis may be useful to easily find the number of tumour and tumor-adjacent normal tissues samples in their respective mass spectrometry experiment. 
 
 ### Analyze page
-Next, the 'Analyze' page allows the user to visualize analysis result with multiple plots for all cancer types used in this analysis. Available plots are discussed below.
+Next, the 'Analyze' page allows the user to visualize analysis results with multiple plots for all cancer types used in this analysis. Available plots are discussed below.
 
 #### Barplots
 Barplots depicting cumulative number of W-Substitutants detected in tumour and adjacent normal tissue samples. User can choose whether to only plot cumulative number of W-Substitutants detected in all samples, tumour samples, or adjacent normal tissue samples.
