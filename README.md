@@ -12,7 +12,7 @@
 <h3 align="center">ABPEPserver: a web application for documentation and analysis of Substitutants </h3>
 
   <p>
-    ABPEPserver is an online database and analytical platform that offers the visualization of a large-scale tumour proteomics analysis of Substitutant expression across multiple tumour types. Functionality-wise, it offers analysis of gene-association signatures of Substitutant peptides, comparison of enrichment between tumour and tumor-adjacent normal tissues, and list of peptides that serve as candidates for immunotherapy design. ABPEPserver, hence will greatly enhance the exploration of aberrant protein production in human cancer.
+    ABPEPserver is an online database and analytical platform that offers the visualization of a large-scale tumour proteomics analysis of Substitutant expression across multiple tumour types. Functionality-wise, it offers analysis of gene-association signatures of Substitutant peptides, comparison of enrichment between tumour and tumor-adjacent normal tissues, and list of peptides that serve as candidates for immunotherapy design. 
     <br />
 
   </p>
