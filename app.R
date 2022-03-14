@@ -7,6 +7,7 @@
 #    http://shiny.rstudio.com/
 #
 
+#Loading all required packages
 library(shiny)
 library(shinydashboard)
 library(plotly)
@@ -23,26 +24,23 @@ library(RMySQL)
 
 source('homepage_UI.R', local=TRUE)
 
-options(mysql = list(
-  "host" = "#",
-  "port" = 3306,
-  "user" = "#",
-  "password" = "#"
-))
+#Create database connection
+db <- dbConnect(MySQL(), dbname = "substitutions", host = "#", 
+                port = 3306, user = "#", password = "#")
 
-databaseName <- "substitutions"
-
-db <- dbConnect(MySQL(), dbname = databaseName, host = options()$mysql$host, 
-                port = options()$mysql$port, user = options()$mysql$user, 
-                password = options()$mysql$password)
-
+#Getting a list of all genes in database
 gene_query <- "SELECT gene_name AS 'Gene' FROM GENES;"
 query_genes <- dbGetQuery(db, gene_query)
 gene_list <- query_genes$Gene
 genes <- append(gene_list, "", 0)
 
-
-header <- dashboardHeader(title = 'ABPEPserver')
+header <- dashboardHeader(title = 'ABPEPserver', dropdownMenu(
+                          type = "notifications", 
+                          icon = icon("question-circle"),
+                          badgeStatus = NULL,
+                          headerText = "Github:",
+                          notificationItem("jasminesmn/ABPEPserver", icon = icon("info-circle"),
+                                           href = "https://github.com/jasminesmn/ABPEPserver")
 
 sidebar <- dashboardSidebar(sidebarMenu(
     menuItem("Home", tabName = "home", icon = icon("home")),
