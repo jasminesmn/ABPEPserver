@@ -24,18 +24,17 @@
 <details>
   <summary>Table of Contents</summary>
   <ol>
-    <li><a href="#about-the-project">About The Project</a></li>
+    <li><a href="#summary">Summary</a></li>
     <li><a href="#usage">Usage</a></li>
-    <li><a href="#visualization">Visualization</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
+
   </ol>
 </details>
 
 
 
-<!-- ABOUT THE PROJECT -->
-## About The Project
+<!-- SUMMARY -->
+## Summary
 
  <a href="https://rhpc.nki.nl/sites/shiny/ABPEP/">
     <img src="images/welcome.png" alt="Welcome ">
@@ -56,28 +55,24 @@ Results are available in:</p>
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+### Home page 
+The user can find relevent background, method and dataset information in the 'Home' page. A broad explanation of the methods used is given for a possibly better understanding of the proteomic analysis. Dataset information of cancer types used in this analysis may be useful to easily find the number of tumour and tumor-adjacent normal tissues samples in their respective mass spectrometry experiment. 
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+### Analyze page
+Next, the 'Analyze' page allows the user to visualize analysis result with multiple plots for all cancer types used in this analysis. Available plots are discussed below.
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+#### Barplots
+Barplots depicting cumulative number of W-Substitutants detected in tumour and adjacent normal tissue samples. User can choose whether to only plot cumulative number of W-Substitutants detected in all samples, tumour samples, or adjacent normal tissue samples.
 
-<!-- VISUALIZATION -->
-## Visualization
+#### Violin plots
+Violin plots depicting the number of Subtitutants detected in lowly expressed (intensity < 0) and highly expressed (intensity > 0) genes in tumor and adjacent normal tissue samples, of which the gene can be chosen. Also, any W-Substitutant can be chosen to plot and compare detected events.
 
-The ABPEPserver allows the user to visualize analysis result with multiple plots.
+#### Scatter contour plots
+Scatter contour plot depicting for every gene the number of W>F peptides when the gene is higher expressed (intensity > 0) on X-axis (High Class) and when the gene is lower expressed (intensity < 0) on Y-axis (Low Class). Contours depict the density of the distribution. W>F peptides in tumours and normal adjacent normal tissues are depicted in red and green, respectively.
 
-### Barplots
-
-This shiny tab allows the upload of two files for the per transcrit comparison of the readcount disctribution along the transcript. Per sample one file is created and ending on  `rpftranscript_output.txt` and they are located in the `user_output/Diricore/` folder. 
-
-### Violin plots
-
-In this tab DEseq2 output files can be displayed as volcano plot including the options for filtering and visualization of specific IDs. Per comparison one` DESEQ.txt / DESEQ2.txt` and one `GENE_DESEQ.txt / GENE_DESEQ2.txt` are to be found in the `user_output/Bumpfinder` folder. The difference is that the GENE_DESEQ files are per gene and not per transcript making the visualization easier. The shiny allows the volcano plot visualization of any DESEQ2 output file that has the following columns / headers in tab separated format: ` ID	baseMean	log2FoldChange	lfcSE	stat	pvalue	padj`.
-
-### Scatter contour plots
-
-Here two diricore RPF plots can be compared. All comparisons are summarized in the `all_rpf_shiny.txt` file that is located in the `user_output/Diricore` folder. 
+### W>F Substitutants page
+Lastly, the page 'W>F Substitutants' allows the user to browse through and download actual detected peptides as well as their number of observations along with further details in table format. Furthermore, the user can choose to plot the number of occurences per peptide in tumour and tumor-adjacent normal tissues. 
+Peptide lists are available for download in .txt file format. 
 
 
 <!-- CONTACT -->
@@ -86,17 +81,3 @@ Here two diricore RPF plots can be compared. All comparisons are summarized in t
 Email: j.montenegronavarro@nki.nl
 
 Project Link: https://github.com/jasminesmn/ABPEPserver
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
-
-<!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
-
-* []()
-* []()
-* []()
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
