@@ -55,6 +55,8 @@ Results are available in:</p>
 <!-- USAGE EXAMPLES -->
 ## Usage
 
+This application is available freely on: https://rhpc.nki.nl/sites/shiny/ABPEP/.
+
 ### Home page 
 The user can find relevent background, method and dataset information in the 'Home' page. A broad explanation of the methods used is given for a possibly better understanding of the proteomic analysis. Dataset information of cancer types used in this analysis may be useful to easily find the number of tumour and tumor-adjacent normal tissues samples in their respective mass spectrometry experiment. 
 
