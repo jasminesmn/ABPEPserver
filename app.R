@@ -28,7 +28,7 @@ source('homepage_UI.R', local=TRUE)
 db <- dbConnect(MySQL(), dbname = "substitutions", host = "#", 
                 port = 3306, user = "#", password = "#")
 
-#Getting a list of all genes in database
+#Query all available genes in database and make a list with their names
 gene_query <- "SELECT gene_name AS 'Gene' FROM GENES;"
 query_genes <- dbGetQuery(db, gene_query)
 gene_list <- query_genes$Gene
@@ -50,13 +50,10 @@ sidebar <- dashboardSidebar(sidebarMenu(
 
 body <- dashboardBody(
     useShinyjs(),
-    tags$head(tags$script(src = 'ABPEPserverJS.js')),
-    tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "ABPEPserverCSS.css")),
+    tags$head(tags$script(src = 'ABPEPserverJS.js')), #Declare JS file for JavaScript code
+    tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "ABPEPserverCSS.css")), #Declare CSS file for CSS style code
     tabItems(tabItem(tabName = "Plots", 
-                     # App title ----
-                     
-                     fluidRow(# Sidebar layout with input and output definitions
-                              sidebarLayout(# Sidebar panel for inputs 
+                     fluidRow(sidebarLayout(
                                   sidebarPanel(id = 'sidebar', 
                                                h2(id="big-heading", "Analyze W-Substitutants"),
                                                selectizeInput(inputId = 'cancertype2', label = 'Select cancer type to analyze:', choices = NULL),
@@ -75,7 +72,6 @@ body <- dashboardBody(
                                       bottom: 25px; position: absolute;")
                                                
                                   ),
-                                  # Main panel for displaying outputs ----
                                   mainPanel(hidden(plotlyOutput("barplot_interactive"),
                                                    plotOutput("barplot"), selectInput(inputId = "samples", 
                                                                                        label = "Select sample types:",
@@ -86,8 +82,6 @@ body <- dashboardBody(
                                                                                                            plotOutput("scatterplot", height = 450, width = "500px")), position = "right")))),
                      
                      fluidRow(hidden(div(id = "violinbox", uiOutput("violin_scatter"))))),
-             
-             # Second tab content
              tabItem(tabName = "home", homepage),
              tabItem(tabName = "Download", div(style ="position: relative; width: 100%; ",
                                                div(id = "table_page", selectInput(inputId = 'cancertype', label = 'Select cancer type:', 
@@ -102,37 +96,42 @@ body <- dashboardBody(
                                             DTOutput('substitutant_table'))))
                                             
 
-# Define UI for application that draws a histogram
+# Define UI for application
 ui <- dashboardPage(skin = 'blue',
                     header,
                     sidebar,
                     body)
 
-# Define server logic required to draw a histogram
+# Define server 
 server <- function(input, output, session) {
-  
+    #Get selected cancer type for peptide table
     cancer_type_subs <- eventReactive(input$load_data, {
       full = input$cancertype
       type = cancer_types()
       type[type$name == full, ]$cancer_id
     })
     
+    #Check if checkbox for interactiveness is selected 
     interactiv <- eventReactive(input$plotButton, {
       input$interactive
     })
     
+    #Check if checkbox 'Scatter contour plot' is selected 
     scatter_yes <- eventReactive(input$plotButton, {
       input$scatterplot_box
     })
     
+    #Check if checkbox 'Barplot depicting number of W-Substitutants' is selected 
     barplot_yes <- eventReactive(input$plotButton, {
       input$barplot_box
     })
     
+    #Check if checkbox 'Violin plot' is selected 
     violinplot_yes <- eventReactive(input$plotButton, {
       input$violinplot_box
     })
 
+    #Get selected cancer type for plots
     cancer_type <- eventReactive(input$plotButton, {
       full = input$cancertype2
       type = cancer_types()
@@ -140,7 +139,7 @@ server <- function(input, output, session) {
     })
   
     
-    
+    #Query W>F peptides from database and make a dataframe including total of occurences in tumour and normals tissue samples. 
     dataset <- function(cancertype = input$cancertype) {
       query <- "SELECT SAMPLE.sample_id, WFpeptides.peptideWf AS 'Peptide', WFpeptides.proteinID AS 'ProteinID', WFpeptides.genesymbol AS 'Gene', WFpeptides.obs FROM WFpeptides 
         JOIN SAMPLE ON WFpeptides.sample_id = SAMPLE.sample_id  WHERE SAMPLE.cancer_id = 'cancertype' 
@@ -177,6 +176,7 @@ server <- function(input, output, session) {
       data
     }
     
+    #Get all available cancer types for analysis from database 
     cancer_types <- function(){
       cancer_types_query <- "SELECT cancer_id, name FROM CANCER"
       cancer_types <- dbGetQuery(db, cancer_types_query)
@@ -184,6 +184,7 @@ server <- function(input, output, session) {
       cancer_types
     }
     
+    #Get tumor sample Substitutant counts table from database 
     tumor_counts <- function(cancertype = input$cancertype2) {
       query <- "SELECT COUNTS.sample_id AS 'id', 
           SUM(case when substitution = 'WF' then count end) WF, 
@@ -213,6 +214,7 @@ server <- function(input, output, session) {
       
     }
     
+    #Get normal sample Substitutant counts table from database 
     normal_counts <- function(cancertype = input$cancertype2) {
       query <- "SELECT COUNTS.sample_id AS 'id', 
                       SUM(case when substitution = 'WF' then count end) WF, 
@@ -240,7 +242,7 @@ server <- function(input, output, session) {
       normal_counts_sql
     }
     
-    
+    #Get gene expression profiles for tumor samples and merge them with the tumor samples Substitutant counts table 
     tumor_data <- function(cancertype = input$cancertype2) {
       tumor_counts_sql <- tumor_counts(cancertype)
       
@@ -257,6 +259,7 @@ server <- function(input, output, session) {
       tumor_genes2
     }
     
+    #Get gene expression profiles for normal samples and merge them with the normal samples Substitutant counts table 
     normal_data <- function(cancertype = input$cancertype2) {
       normal_counts_sql <- normal_counts(cancertype)
       
@@ -274,6 +277,7 @@ server <- function(input, output, session) {
       
     }
     
+    #Query tumor sample gene cluster table from database
     tumor_cluster_data <- function(cancertype = input$cancertype2) {
       query <- "SELECT GENES.gene_name, wf_up, wf_down, wy_up, wy_down, 
                 num_up, num_down FROM CLUSTER_TUMOR JOIN GENES ON CLUSTER_TUMOR.gene_id=GENES.gene_id 
@@ -287,6 +291,7 @@ server <- function(input, output, session) {
       tumor_cluster
     }
     
+    #Query normal sample gene cluster table from database
     normal_cluster_data <- function(cancertype = input$cancertype2) {
       query <- "SELECT GENES.gene_name, wf_up, wf_down, wy_up, wy_down, 
                   num_up, num_down FROM CLUSTER_NORMAL JOIN GENES ON CLUSTER_NORMAL.gene_id=GENES.gene_id 
@@ -300,7 +305,7 @@ server <- function(input, output, session) {
       normal_cluster
     }
     
-    
+     #Display Download and Plot button when user clicks on Load data button (W>F Substitutatns page)
     observeEvent(input$load_data, {
       output$download <- renderUI({
         div(style ="bottom: 25px; position: absolute;",
@@ -310,6 +315,7 @@ server <- function(input, output, session) {
       })
     })
 
+    #When user clicks on 'Plot peptides' button, peptide table gets loaded and the data is used to plot peptide occurences in tumor samples against normal samples. 
     peptide_plot <- eventReactive(input$plotData, {
       data_peps <- dataset(cancer_type_subs())
       
@@ -323,7 +329,7 @@ server <- function(input, output, session) {
                             xaxis = list(title = "Total occurences in tumor tissue samples"))
     })
     
-    
+    #Render the peptide plot, when user clicks on peptide row in table, it will show in the displayed plot. 
     output$pep_plot <- renderPlotly({
       plot <- peptide_plot()
       
@@ -356,7 +362,7 @@ server <- function(input, output, session) {
     
 
     
-    # Downloadable csv of selected dataset ----
+    # Downloads txt file of selected dataset when clicked on Download button
     output$downloadData <- downloadHandler(
       filename = function() {
         paste(cancer_type_subs(), "WFpeps.txt", sep = "_")
@@ -366,7 +372,7 @@ server <- function(input, output, session) {
       }
     )
 
-  
+    #Renders W>F peptides table, customizing DT table with a red header for tumor tissue samples and a green header for normal tissue samples
     output$substitutant_table<- renderDT({
       data <- dataset(cancer_type_subs())
       info <- colnames(data)
@@ -406,7 +412,7 @@ server <- function(input, output, session) {
       ) 
     })
 
-
+    #Load data for violinplot
     violin_tumor_data <- eventReactive(input$plotButton, {
       if (violinplot_yes()) {
         tumor = tumor_data(cancer_type())
@@ -415,6 +421,7 @@ server <- function(input, output, session) {
       
     })
     
+    #Load data for violinplot
     violin_normal_data <- eventReactive(input$plotButton, {
       if (violinplot_yes()) {
         normal = normal_data(cancer_type())
@@ -422,7 +429,8 @@ server <- function(input, output, session) {
       }
     })
 
-    
+    #Render UI for the violin plot, if the scatterplot is also selected, the violinplot UI will show below the scatterplot and the sidebarpanel will be dislayed on the left.
+    #If the scatterplot is not selected, the sidebarpanel will be displayed on the right. 
     output$violin_scatter <- renderUI({
         if (scatter_yes()) {
           if (interactiv() == "No") {
@@ -526,6 +534,7 @@ server <- function(input, output, session) {
         
     })
     
+    #Hides or shows panels when they are not selected or selected after button click. Also takes into account whether plots need to be interactive or not 
     observeEvent(input$plotButton, {
         if (interactiv() == "No") {
             toggle("barplot", condition = input$barplot_box)
@@ -551,6 +560,7 @@ server <- function(input, output, session) {
         
     })
     
+    #If checkbox for the barplot is selected and user chooses for interactive plots, required datasets are loaded and an interactive barplot is plotted 
     output$barplot_interactive <- renderPlotly ({
         if (barplot_yes()) {
           cancertype <- cancer_type()
@@ -586,7 +596,8 @@ server <- function(input, output, session) {
         
     })
     
-
+    #If checkbox for the barplot is selected and user doesn't choose interactive plots, required datasets are loaded and a normal barplot is plotted.
+    #In this plot, the user can select to plot only tumor sample counts, normal sample counts or both counts together. 
     output$barplot <- renderPlot({
         if (barplot_yes()) {
           cancertype = cancer_type()
@@ -619,7 +630,8 @@ server <- function(input, output, session) {
         
     })
     
-    
+    #If checkbox for the scatterplot is selected and user doesn't choose interactive plots, required datasets are loaded and a scatter density contour plot is plotted.
+    #User can also select a gene to be pointed out in the plot if the gene is present in the specified cancer type dataset. 
     output$scatterplot <- renderPlot({
         if (scatter_yes()) {
           cancertype = cancer_type()
@@ -680,7 +692,8 @@ server <- function(input, output, session) {
     })
     
     
-    
+    #If checkbox for the scatterplot is selected and user chooses for interactive plots, required datasets are loaded and an interactive scatter density contour plot along with its
+    #datapoints is plotted. User can also select a gene to be pointed out in the plot if the gene is present in the specified cancer type dataset. 
     output$scatterplot_interactive <- renderPlotly({
         if (scatter_yes()) {
           cancertype <- cancer_type()
@@ -748,12 +761,13 @@ server <- function(input, output, session) {
         
     })
     
+    #Renders violinplot
     output$violinplot <- renderPlot ({
       showPlot()
     })
     
     
-    #Calls function 'plotInput' and prints output plot.
+    #Load required data and plot violinplots with selected values when the plot button (specific for violinplots) is clicked
     showPlot <- eventReactive(input$plot_violin, {
       cancertype = cancer_type()
       gene <- input$gene
@@ -818,11 +832,12 @@ server <- function(input, output, session) {
       
     })
     
-
+    #Render interactive violinplots
     output$violinplot_interactive <- renderPlotly({
       showPlot_interactive()
     })
     
+    #Load required data and plot interacive violinplots with selected values when the plot button (specific for interactive violinplots) is clicked
     showPlot_interactive <- eventReactive(input$plot_violin_interactive, {
       cancertype = cancer_type()
       gene <- input$gene
@@ -931,29 +946,19 @@ server <- function(input, output, session) {
       plot %>% toWebGL()
       
     })
-    
+
+    #Change input cancer types dynamically with the available cancer types in database
     observe({
       updateSelectizeInput(session = session, inputId = "cancertype2", choices = cancer_types()$name)
       updateSelectInput(session = session, inputId = "cancertype", choices = cancer_types()$name)
 
     })
 }
-
+  
+#Close connection with database when the application is stopped (user exits)
 onStop(function() {
   dbDisconnect(db)
 })
 
 # Run the application 
 shinyApp(ui = ui, server = server)
-
-
-
-
-
-
-
-
-
-
-
-
