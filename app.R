@@ -15,17 +15,20 @@ library(DBI)
 library(shinycssloaders)
 library(RMySQL)
 
+
 source('homepage_UI.R', local=TRUE)
 
 #Create database connection
 db <- dbConnect(MySQL(), dbname = "substitutions", host = "#", 
-                port = 3306, user = "#", password = "#")
+                port = 3306, user = "#", 
+                password = "#")
 
 #Query all available genes in database and make a list with their names
 gene_query <- "SELECT gene_name AS 'Gene' FROM GENES;"
 query_genes <- dbGetQuery(db, gene_query)
 gene_list <- query_genes$Gene
 genes <- append(gene_list, "", 0)
+
 
 header <- dashboardHeader(title = 'ABPEPserver', dropdownMenu(
                           type = "notifications", 
@@ -34,11 +37,12 @@ header <- dashboardHeader(title = 'ABPEPserver', dropdownMenu(
                           headerText = "Github:",
                           notificationItem("jasminesmn/ABPEPserver", icon = icon("info-circle"),
                                            href = "https://github.com/jasminesmn/ABPEPserver")
+                        ))
 
 sidebar <- dashboardSidebar(sidebarMenu(
     menuItem("Home", tabName = "home", icon = icon("home")),
     menuItem("Analyze", tabName = "Plots", icon = icon("chart-bar")),
-    menuItem("W>F substitutants", tabName = "Download", icon = icon("table"))
+    menuItem("W>F Substitutants", tabName = "Download", icon = icon("table"))
 ))
 
 body <- dashboardBody(
@@ -53,11 +57,9 @@ body <- dashboardBody(
                                                
                                                HTML("<b>Select plots: </b><br>"),
                                                
-                                               checkboxInput(inputId = "barplot_box", "Barplot depicting number of W-substitutants"),
+                                               checkboxInput(inputId = "barplot_box", "Barplot depicting number of W-Substitutants"),
                                                checkboxInput(inputId = "scatterplot_box", "Scatter contour plot"),
                                                checkboxInput(inputId = "violinplot_box", "Violin plot"),
-                                                                                     
-                                               radioButtons(inputId = "interactive", "Make plots interactive", c("Yes", "No"), selected = "No", inline = TRUE),
                                                
                                                
                                                br(), br(),
@@ -65,14 +67,9 @@ body <- dashboardBody(
                                       bottom: 25px; position: absolute;")
                                                
                                   ),
-                                  mainPanel(hidden(plotlyOutput("barplot_interactive"),
-                                                   plotOutput("barplot"), selectInput(inputId = "samples", 
-                                                                                       label = "Select sample types:",
-                                                                                       choices = c("All samples" = "all", "Tumour tissue samples" = "tumor",
-                                                                                       "Normal tissue samples" = "normal"), selected = "all"))))),
+                                  mainPanel(plotlyOutput("barplot_interactive")))),
                      fluidRow(hidden(div(id = "scatterbox", sidebarLayout(sidebarPanel(id = "sidebar2", selectizeInput(inputId = "gene_scatter", choices = genes, label = "Select gene: ")),
-                                                                                                 mainPanel(plotlyOutput("scatterplot_interactive"),
-                                                                                                           plotOutput("scatterplot", height = 450, width = "500px")), position = "right")))),
+                                                                                                 mainPanel(plotOutput("scatterplot", height = 450, width = "500px")), position = "right")))),
                      
                      fluidRow(hidden(div(id = "violinbox", uiOutput("violin_scatter"))))),
              tabItem(tabName = "home", homepage),
@@ -81,7 +78,7 @@ body <- dashboardBody(
                                                                choices = NULL),
                                                actionButton("load_data", "Load data", style = "color: #000; background-color: #bee0ec; font-size: 15px; border: 0px; font-weight: bold; "),
                                                uiOutput("download"), br(),
-                                               helpText("W>F substitutants in the peptides are shown with a lowercase f. "),
+                                               helpText("W>F Substitutants in the peptides are shown with a lowercase f. "),
                                                helpText("The column 'Total' accounts for the total occurences of the peptide in all samples.
                                                The column 'Σ Total' accounts for the total of occurences in tumor tissue samples and the column 'Σ Normal' accounts for the total of occurences in adj. normal tissue samples. 
                                                The following columns showcases for each sample whether the peptide is found."), br(), br()),
@@ -104,11 +101,7 @@ server <- function(input, output, session) {
       type[type$name == full, ]$cancer_id
     })
     
-    #Check if checkbox for interactiveness is selected 
-    interactiv <- eventReactive(input$plotButton, {
-      input$interactive
-    })
-    
+
     #Check if checkbox 'Scatter contour plot' is selected 
     scatter_yes <- eventReactive(input$plotButton, {
       input$scatterplot_box
@@ -123,7 +116,7 @@ server <- function(input, output, session) {
     violinplot_yes <- eventReactive(input$plotButton, {
       input$violinplot_box
     })
-
+    
     #Get selected cancer type for plots
     cancer_type <- eventReactive(input$plotButton, {
       full = input$cancertype2
@@ -298,7 +291,7 @@ server <- function(input, output, session) {
       normal_cluster
     }
     
-     #Display Download and Plot button when user clicks on Load data button (W>F Substitutatns page)
+    #Display Download and Plot button when user clicks on Load data button (W>F Substitutatns page)
     observeEvent(input$load_data, {
       output$download <- renderUI({
         div(style ="bottom: 25px; position: absolute;",
@@ -396,7 +389,7 @@ server <- function(input, output, session) {
               }"
                     
       
-      datatable(data, caption = paste('W>F substitutant peptides found in', cancer_type_subs(), sep = " "),
+      datatable(data, caption = paste('W>F Substitutant peptides found in', cancer_type_subs(), sep = " "),
                 rownames = FALSE, container = sketch, extensions = c('FixedColumns'), 
                 options = list(
                   scrollX = TRUE,
@@ -405,33 +398,15 @@ server <- function(input, output, session) {
       ) 
     })
 
-    #Load data for violinplot
-    violin_tumor_data <- eventReactive(input$plotButton, {
-      if (violinplot_yes()) {
-        tumor = tumor_data(cancer_type())
-        tumor
-      }
-      
-    })
-    
-    #Load data for violinplot
-    violin_normal_data <- eventReactive(input$plotButton, {
-      if (violinplot_yes()) {
-        normal = normal_data(cancer_type())
-        normal
-      }
-    })
-
     #Render UI for the violin plot, if the scatterplot is also selected, the violinplot UI will show below the scatterplot and the sidebarpanel will be dislayed on the left.
     #If the scatterplot is not selected, the sidebarpanel will be displayed on the right. 
     output$violin_scatter <- renderUI({
         if (scatter_yes()) {
-          if (interactiv() == "No") {
-            sidebarLayout(sidebarPanel(id = "sidebar3", selectizeInput(inputId = "gene",
+          sidebarLayout(sidebarPanel(id = "sidebar3", selectizeInput(inputId = "gene",
                                                    label = "Select gene:",
                                                    choices = gene_list),
                                        selectInput(inputId = "subs",
-                                                   label = "Select substitutants to compare:",
+                                                   label = "Select Substitutants to compare:",
                                                    choices = c("W>F" = "WF", "W>M" = "WM", "W>A" = "WA",
                                                                "W>Q" = "WQ", "W>C" = "WC", "W>E" = "WE", 
                                                                "W>Y" = "WY", "W>D" = "WD", "W>H" = "WH", 
@@ -449,38 +424,13 @@ server <- function(input, output, session) {
                                     bottom: 25px; position: absolute;")),
                           mainPanel(tags$style(HTML("#violinplot { padding-top: 30px; padding-right: 30px;}")),
                                     plotOutput("violinplot") %>% withSpinner()), position = "left")
-          } else {
-            sidebarLayout(sidebarPanel(id = "sidebar3", selectizeInput(inputId = "gene",
-                                                   label = "Select gene:",
-                                                   choices = gene_list),
-                                       selectInput(inputId = "subs",
-                                                   label = "Select substitutants to compare:",
-                                                   choices = c("W>F" = "WF", "W>M" = "WM", "W>A" = "WA",
-                                                               "W>Q" = "WQ", "W>C" = "WC", "W>E" = "WE", 
-                                                               "W>Y" = "WY", "W>D" = "WD", "W>H" = "WH", 
-                                                               "W>N" = "WN", "W>S" = "WS", "W>G" = "WG", 
-                                                               "W>I" = "WI", "W>P" = "WP", "W>T" = "WT",
-                                                               "W>V" = "WV")),
-                                       selectInput(inputId = "subs2", label = "",
-                                                   choices = c("W>F" = "WF", "W>M" = "WM", "W>A" = "WA",
-                                                               "W>Q" = "WQ", "W>C" = "WC", "W>E" = "WE", 
-                                                               "W>Y" = "WY", "W>D" = "WD", "W>H" = "WH", 
-                                                               "W>N" = "WN", "W>S" = "WS", "W>G" = "WG", 
-                                                               "W>I" = "WI", "W>P" = "WP", "W>T" = "WT",
-                                                               "W>V" = "WV")),
-                                       actionButton(inputId = "plot_violin_interactive", label = "Plot", style = "color: #000; background-color: #bee0ec; font-size: 15px; border: 0px; font-weight: bold;
-                                    bottom: 25px; position: absolute;")),
-                          mainPanel(tags$style(HTML("#violinplot_interactive {padding-top: 30px; padding-right: 20px;}")),
-                                    plotlyOutput("violinplot_interactive") %>% withSpinner()), position = "left")
-          } 
             
         } else {
-          if (interactiv() == "No") {
-            sidebarLayout(sidebarPanel(id = "sidebar3", selectizeInput(inputId = "gene",
+          sidebarLayout(sidebarPanel(id = "sidebar3", selectizeInput(inputId = "gene",
                                                    label = "Select gene:",
                                                    choices = gene_list),
                                        selectInput(inputId = "subs",
-                                                   label = "Select substitutants to compare:",
+                                                   label = "Select Substitutants to compare:",
                                                    choices = c("W>F" = "WF", "W>M" = "WM", "W>A" = "WA",
                                                                "W>Q" = "WQ", "W>C" = "WC", "W>E" = "WE", 
                                                                "W>Y" = "WY", "W>D" = "WD", "W>H" = "WH", 
@@ -498,30 +448,7 @@ server <- function(input, output, session) {
                                     bottom: 25px; position: absolute;")),
                           mainPanel(tags$style(HTML("#violinplot { padding-top: 30px; padding-left: 30px; }")),
                                     plotOutput("violinplot") %>% withSpinner()), position = "right")
-          } else {
-            sidebarLayout(sidebarPanel(id = "sidebar3", selectizeInput(inputId = "gene",
-                                                   label = "Select gene:",
-                                                   choices = gene_list),
-                                       selectInput(inputId = "subs",
-                                                   label = "Select substitutants to compare:",
-                                                   choices = c("W>F" = "WF", "W>M" = "WM", "W>A" = "WA",
-                                                               "W>Q" = "WQ", "W>C" = "WC", "W>E" = "WE", 
-                                                               "W>Y" = "WY", "W>D" = "WD", "W>H" = "WH", 
-                                                               "W>N" = "WN", "W>S" = "WS", "W>G" = "WG", 
-                                                               "W>I" = "WI", "W>P" = "WP", "W>T" = "WT",
-                                                               "W>V" = "WV")),
-                                       selectInput(inputId = "subs2", label = "",
-                                                   choices = c("W>F" = "WF", "W>M" = "WM", "W>A" = "WA",
-                                                               "W>Q" = "WQ", "W>C" = "WC", "W>E" = "WE", 
-                                                               "W>Y" = "WY", "W>D" = "WD", "W>H" = "WH", 
-                                                               "W>N" = "WN", "W>S" = "WS", "W>G" = "WG", 
-                                                               "W>I" = "WI", "W>P" = "WP", "W>T" = "WT",
-                                                               "W>V" = "WV")),
-                                       actionButton(inputId = "plot_violin_interactive", label = "Plot", style = "color: #000; background-color: #bee0ec; font-size: 15px; border: 0px; font-weight: bold;
-                                    bottom: 25px; position: absolute;")),
-                          mainPanel(tags$style(HTML("#violinplot_interactive {padding-top: 30px; padding-left: 20px;}")),
-                                    plotlyOutput("violinplot_interactive") %>% withSpinner()), position = "right")
-          }
+          
           }
             
         
@@ -529,31 +456,12 @@ server <- function(input, output, session) {
     
     #Hides or shows panels when they are not selected or selected after button click. Also takes into account whether plots need to be interactive or not 
     observeEvent(input$plotButton, {
-        if (interactiv() == "No") {
-            toggle("barplot", condition = input$barplot_box)
-            hide("barplot_interactive")
-            toggle("samples", condition = input$barplot_box)
-            
-            hide("scatterplot_interactive")
-            show("scatterplot")
-            toggle("scatterbox", condition = input$scatterplot_box)
-            
-            toggle("violinbox", condition = input$violinplot_box)
-        } else if (interactiv() == "Yes") {
-            toggle("barplot_interactive", condition = input$barplot_box)
-            hide("barplot")
-            hide("samples")
-            
-            show("scatterplot_interactive")
-            hide("scatterplot")
-            toggle("scatterbox", condition = input$scatterplot_box)
-            
-            toggle("violinbox", condition = input$violinplot_box)
-        }
+        toggle("scatterbox", condition = input$scatterplot_box)
+        toggle("violinbox", condition = input$violinplot_box)
         
     })
     
-    #If checkbox for the barplot is selected and user chooses for interactive plots, required datasets are loaded and an interactive barplot is plotted 
+    #If checkbox for the barplot is selected, required datasets are loaded and an interactive barplot is plotted 
     output$barplot_interactive <- renderPlotly ({
         if (barplot_yes()) {
           cancertype <- cancer_type()
@@ -577,53 +485,20 @@ server <- function(input, output, session) {
             marker = list(color = 'red'), hoverinfo = 'text',
             text = ~paste("</br>Substitutant: ", toupper(colnames(tumor_counts [,-1])),
                           "</br># Substitutants in tumor samples: ", colSums (tumor_counts [,-1]),
-                          "</br># Total substitutants: ", (colSums (normal_counts [,-1]))+colSums (tumor_counts [,-1])),
-            type = "bar") %>% layout(xaxis = list(categoryorder = "total ascending"), title = paste("W-substitutants in", cancertype)) %>% add_trace(y = colSums (normal_counts [,-1]), 
+                          "</br># Total Substitutants: ", (colSums (normal_counts [,-1]))+colSums (tumor_counts [,-1])),
+            type = "bar") %>% layout(xaxis = list(categoryorder = "total ascending"), title = paste("W-Substitutants in", cancertype)) %>% add_trace(y = colSums (normal_counts [,-1]), 
                                                                                                                                                      color = 'green', name = 'Adj. Normal samples',  hoverinfo = 'text',
                                                                                                                                                      text = ~paste('</br>Substitutant: ', toupper(colnames(normal_counts [,-1])), 
                                                                                                                                                                    '</br># Substitutants in adj. normal samples: ', colSums (normal_counts [,-1]), 
-                                                                                                                                                                   '</br>Total substitutants: ', (colSums (normal_counts [,-1]))+colSums (tumor_counts [,-1])), 
+                                                                                                                                                                   '</br>Total Substitutants: ', (colSums (normal_counts [,-1]))+colSums (tumor_counts [,-1])), 
                                                                                                                                                      marker = list(color = 'green')) %>% layout(yaxis = list(title = '# Substitutant'), barmode = 'stack')
         }
         
         
     })
     
-    #If checkbox for the barplot is selected and user doesn't choose interactive plots, required datasets are loaded and a normal barplot is plotted.
-    #In this plot, the user can select to plot only tumor sample counts, normal sample counts or both counts together. 
-    output$barplot <- renderPlot({
-        if (barplot_yes()) {
-          cancertype = cancer_type()
-          
-          tumor_genes <- suppressWarnings(tumor_counts(cancertype))
-          normal_genes <- suppressWarnings(normal_counts(cancertype))
-          combined = rbind(tumor_genes, normal_genes)
-          
-          tumor_counts = tumor_genes[, 1:18]
-          normal_counts = normal_genes[, 1:18]
-          counts = combined[, 1:18]
-          
-          tumor_counts$WL <- NULL
-          normal_counts$WL <- NULL
-          counts$WL <- NULL
-          
-          choice = input$samples
-          
-          if (choice == "all") {
-            barplot (sort (colSums (counts [,-1])), ylab = "#detected W-substitutants", main = paste("W-substitutants in", cancertype))
-          }
-          else if (choice == "normal") {
-            barplot (sort (colSums (normal_counts [,-1])), ylab = "#detected W-substitutants", main = paste("W-substitutants in", cancertype))
-          }
-          else if (choice == "tumor") {
-            barplot (sort (colSums (tumor_counts [,-1])), ylab = "#detected W-substitutants", main = paste("W-substitutants in", cancertype))
-          }
-        }
-        
-        
-    })
     
-    #If checkbox for the scatterplot is selected and user doesn't choose interactive plots, required datasets are loaded and a scatter density contour plot is plotted.
+    #If checkbox for the scatterplot is selected, required datasets are loaded and a scatter density contour plot is plotted.
     #User can also select a gene to be pointed out in the plot if the gene is present in the specified cancer type dataset. 
     output$scatterplot <- renderPlot({
         if (scatter_yes()) {
@@ -684,74 +559,21 @@ server <- function(input, output, session) {
         
     })
     
+    #Load data for violinplot
+    violin_tumor_data <- eventReactive(input$plotButton, {
+      if (violinplot_yes()) {
+        tumor = tumor_data(cancer_type())
+        tumor
+      }
+      
+    })
     
-    #If checkbox for the scatterplot is selected and user chooses for interactive plots, required datasets are loaded and an interactive scatter density contour plot along with its
-    #datapoints is plotted. User can also select a gene to be pointed out in the plot if the gene is present in the specified cancer type dataset. 
-    output$scatterplot_interactive <- renderPlotly({
-        if (scatter_yes()) {
-          cancertype <- cancer_type()
-          
-          genes_tumor = tumor_cluster_data(cancertype)
-          genes_normal = normal_cluster_data(cancertype)
-          
-          gene <- input$gene_scatter
-          
-          genes <- append(genes_tumor$id, "", 0)
-          
-          string <- paste(paste("Selected gene is not found in", cancertype), "data. Select another gene.")
-          
-          validate(
-            need(gene %in% genes, string)
-          )
-          
-          if (nrow(genes_normal) < 5) {
-            m <- ggplot(genes_tumor, aes(x = WF_UP, y = WF_DOWN)) +
-              geom_point(aes(color = 'Tumor sample', text = paste("Gene: ", id)), alpha = 0.2) +
-              geom_density_2d(aes(color = 'Tumor sample 2D density contours')) + 
-              labs(x = "W>F substitutants in up-regulated genes",
-                   y = "W>F substitutants in down-regulated genes",
-                   title= paste(cancertype, ":W>F (Proteomics)")) + 
-              scale_color_manual(name = 'Sample types: ',   guide = 'legend', values = c('Tumor sample' = 'red', 'Tumor sample 2D density contours' = 'black')) 
-          } else {
-            m <- ggplot(genes_tumor, aes(x = WF_UP, y = WF_DOWN)) +
-              geom_point(aes(color = 'Tumor sample', text = paste("Gene: ", id)), alpha = 0.2) +
-              geom_density_2d(aes(color = 'Tumor sample 2D density contours')) +
-              geom_point(data = genes_normal, aes(color = 'Adj. Normal sample', text = paste("Gene: ", id)), alpha = 0.2) +
-              geom_density_2d(data = genes_normal, aes(color = 'Adj. Normal sample 2D density contours'))  +
-              labs(x = "W>F substitutants in up-regulated genes",
-                   y = "W>F substitutants in down-regulated genes",
-                   title= paste(cancertype, ":W>F (Proteomics)")) + 
-              scale_color_manual(name = 'Sample types: ',   guide = 'legend', values = c('Adj. Normal sample' = 'green', 'Tumor sample' = 'red', 'Adj. Normal sample 2D density contours' = 'blue',
-                                                                                         'Tumor sample 2D density contours' = 'blue')) 
-          }
-          
-          
-          p <- ggplotly(m + theme_bw() + theme(legend.title = element_blank(), plot.background = element_blank()), panel.grid.minor = element_blank()) 
-          
-          
-          if ((grepl("[A-Za-z]", gene)) == TRUE &&  gene %in% genes_tumor$id) {
-            point <- list(
-              x = genes_tumor[genes_tumor$id == gene, ]$WF_UP,
-              y = genes_tumor[genes_tumor$id == gene, ]$WF_DOWN,
-              text = gene,
-              xref = "x",
-              yref = "y",
-              showarrow = TRUE,
-              align = "right",
-              ax = 20,
-              ay = -40,
-              arrowwidth = 2) 
-            p <- p %>% layout(annotations = point)    }
-          tryCatch(
-            { p$x$data[[2]]$line$width <- 0.6
-              p$x$data[[4]]$line$width <- 0.6
-            }, # Code that might error goes here, between the { }
-            error = function(e) {""} # Leave this line as-is.
-          )
-          p %>% toWebGL()
-        }
-        
-        
+    #Load data for violinplot
+    violin_normal_data <- eventReactive(input$plotButton, {
+      if (violinplot_yes()) {
+        normal = normal_data(cancer_type())
+        normal
+      }
     })
     
     #Renders violinplot
@@ -825,121 +647,7 @@ server <- function(input, output, session) {
       
     })
     
-    #Render interactive violinplots
-    output$violinplot_interactive <- renderPlotly({
-      showPlot_interactive()
-    })
     
-    #Load required data and plot interacive violinplots with selected values when the plot button (specific for interactive violinplots) is clicked
-    showPlot_interactive <- eventReactive(input$plot_violin_interactive, {
-      cancertype = cancer_type()
-      gene <- input$gene
-      
-      tumor_genes <- suppressWarnings(violin_tumor_data())
-      normal_genes <- suppressWarnings(violin_normal_data())
-      
-      genes <- colnames(tumor_genes)
-      
-      string <- paste(paste("Selected gene is not found in", cancertype), "data. Select another gene.")
-      
-      validate(
-        need(gene %in% genes, string)
-      )
-      
-      subs1 <- input$subs
-      subs2 <- input$subs2
-      
-      normal_sub1_low <- as.data.frame(normal_genes[normal_genes[ , gene] < 0, ][, subs1])
-      colnames(normal_sub1_low) <- "# Substitutants in sample"
-      normal_sub1_high <- as.data.frame(normal_genes[normal_genes[ , gene] > 0, ][, subs1])
-      colnames(normal_sub1_high) <- "# Substitutants in sample"
-      
-      tumor_sub1_low <- as.data.frame(tumor_genes[tumor_genes[ , gene] < 0, ][, subs1])
-      colnames(tumor_sub1_low) <- "# Substitutants in sample"
-      tumor_sub1_high <- as.data.frame(tumor_genes[tumor_genes[ , gene] > 0, ][, subs1])
-      colnames(tumor_sub1_high) <- "# Substitutants in sample"
-      
-      
-      sub1 <- ggplot(normal_sub1_low, aes(x = "N Low", y = `# Substitutants in sample`)) + 
-        geom_violin(alpha = 0.3, aes(color = 'Adj. Normal Tissues'), fill = 'green') +
-        geom_boxplot() +
-        
-        geom_violin(data = normal_sub1_high, aes(x = "N High", y = `# Substitutants in sample`, color = 'Adj. Normal Tissues'), fill = 'green', alpha = 0.3) + 
-        geom_boxplot(data = normal_sub1_high, aes(x = "N High", y = `# Substitutants in sample`)) +
-        
-        geom_violin(data = tumor_sub1_low, aes(x = "T Low", y = `# Substitutants in sample`, color = 'Tumors'), fill = 'red', alpha = 0.5) +
-        geom_boxplot(data = tumor_sub1_low, aes(x = "T Low", y = `# Substitutants in sample`)) + 
-        
-        geom_violin(data = tumor_sub1_high, aes(x = "T High", y = `# Substitutants in sample`, color = 'Tumors'), fill = 'red', alpha = 0.5) +
-        geom_boxplot(data = tumor_sub1_high, aes(x = "T High", y = `# Substitutants in sample`)) +
-        labs(x = toupper(paste(strsplit(subs1, "")[[1]][1], strsplit(subs1, "")[[1]][2], sep = ">")), y = "# Substitutants") +
-        scale_color_manual(name = ' ',   guide = 'legend', values = c('Adj. Normal Tissues' = 'green', 'Tumors' = 'red')) +
-        scale_x_discrete(limits = c("N Low", "N High", "T Low", "T High"), labels = c("N Low" = "Low", "N High" = "High", "T Low" = "Low", "T High" = "High"))
-      
-      p <- plotly_build(sub1 + theme_classic())
-      
-      for (i in 1:length(p$x$data)) {
-        p$x$data[[i]]$marker$opacity <- 0
-        p$x$data[[i]]$line$width <- 1
-        p$x$data[[i]]$width <- 0.1
-      }
-      
-      
-      normal_sub2_low <- as.data.frame(normal_genes[normal_genes[ , gene] < 0, ][, subs2])
-      colnames(normal_sub2_low) <- "# Substitutants in sample"
-      normal_sub2_high <- as.data.frame(normal_genes[normal_genes[ , gene] > 0, ][, subs2])
-      colnames(normal_sub2_high) <- "# Substitutants in sample"
-      
-      tumor_sub2_low <- as.data.frame(tumor_genes[tumor_genes[ , gene] < 0, ][, subs2])
-      colnames(tumor_sub2_low) <- "# Substitutants in sample"
-      tumor_sub2_high <- as.data.frame(tumor_genes[tumor_genes[ , gene] > 0, ][, subs2])
-      colnames(tumor_sub2_high) <- "# Substitutants in sample"
-      
-      sub2 <- ggplot(normal_sub2_low, aes(x = "N Low", y = `# Substitutants in sample`)) + 
-        geom_violin(alpha = 0.3, aes(color = 'Adj. Normal Tissues'), fill = 'green') +
-        geom_boxplot() +
-        
-        geom_violin(data = normal_sub2_high, aes(x = "N High", y = `# Substitutants in sample`, color = 'Adj. Normal Tissues'), fill = 'green', alpha = 0.3) + 
-        geom_boxplot(data = normal_sub2_high, aes(x = "N High", y = `# Substitutants in sample`)) +
-        
-        geom_violin(data = tumor_sub2_low, aes(x = "T Low", y = `# Substitutants in sample`, color = 'Tumors'), fill = 'red', alpha = 0.5) +
-        geom_boxplot(data = tumor_sub2_low, aes(x = "T Low", y = `# Substitutants in sample`)) + 
-        
-        geom_violin(data = tumor_sub2_high, aes(x = "T High", y = `# Substitutants in sample`, color = 'Tumors'), fill = 'red', alpha = 0.5) +
-        geom_boxplot(data = tumor_sub2_high, aes(x = "T High", y = `# Substitutants in sample`)) +
-        labs(x = toupper(paste(strsplit(subs2, "")[[1]][1], strsplit(subs2, "")[[1]][2], sep = ">")), y = "# Substitutants") +
-        scale_color_manual(name = ' ',   guide = 'legend', values = c('Adj. Normal Tissues' = 'green', 'Tumors' = 'red')) +
-        scale_x_discrete(limits = c("N Low", "N High", "T Low", "T High"), labels = c("N Low" = "Low", "N High" = "High", "T Low" = "Low", "T High" = "High"))
-      
-      p2 <- plotly_build(sub2 + theme_classic())
-      
-      for (j in 1:length(p2$x$data)) {
-        p2$x$data[[j]]$marker$opacity <- 0
-        p2$x$data[[j]]$line$width <- 1
-        p2$x$data[[j]]$width <- 0.1
-      }
-      
-      mrg <- list(l = 50, r = 50, b = 50, t = 50, pad = 20)
-      
-      yaxis_max <- c(p$x$layout$yaxis$range[2], p2$x$layout$yaxis$range[2])
-      yaxis_min <- c(p$x$layout$yaxis$range[1], p2$x$layout$yaxis$range[1])
-      
-      plot <- subplot(style(p, showlegend = F), p2, shareY = TRUE, titleX = TRUE) %>% layout(title = paste(paste(cancertype, gene, sep = ":"), " association"), margin = mrg)
-      
-      x <- (0:(ceiling(max(yaxis_max))/10))*10
-      labels <- x
-      labels_text <- as.character(x)
-      limits <- c(min(yaxis_min), max(yaxis_max))
-      
-      plot$x$layout$yaxis$range <- limits
-      plot$x$layout$yaxis$ticktext <- labels_text
-      plot$x$layout$yaxis$tickvals <- labels
-      plot$x$layout$yaxis$categoryarray <- labels_text
-      
-      plot %>% toWebGL()
-      
-    })
-
     #Change input cancer types dynamically with the available cancer types in database
     observe({
       updateSelectizeInput(session = session, inputId = "cancertype2", choices = cancer_types()$name)
@@ -947,7 +655,7 @@ server <- function(input, output, session) {
 
     })
 }
-  
+
 #Close connection with database when the application is stopped (user exits)
 onStop(function() {
   dbDisconnect(db)
