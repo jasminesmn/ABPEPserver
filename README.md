@@ -48,7 +48,7 @@ Results are available in:</p>
 <ul><li>Barplots depicting cumulative number of W-substitutants detected in tumour and adjacent normal tissue samples.</li>
 <li>Violin plots depicting the number of substitutions detected in low (intensity < 0) and high (intensity >0) tumor and adjacent normal tissue samples.</li>
 <li>Scatter contour plots depicting for every gene the number of W>F substitutions when the gene is higher expressed (intensity > 0) on X-axis (High Class) and when the gene is lower expressed (intensity < 0) on Y-axis (Low Class).</li>
-<li>Excel file outputs with the list of aberrant peptides.</li></ul>
+<li>Excel file outputs with lists of aberrant w>F peptides.</li></ul>
 
 
 
