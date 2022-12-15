@@ -61,7 +61,8 @@ This application is available freely on: https://rhpc.nki.nl/sites/shiny/ABPEP/.
 The user can find relevent background, method and dataset information in the 'Home' page. A broad explanation of the methods used is given for a possibly better understanding of the proteomic analysis. Dataset information of cancer types used in this analysis may be useful to easily find the number of tumour and tumor-adjacent normal tissues samples in their respective mass spectrometry experiment. 
 
 ### Analyze page
-Next, the 'Analyze' page allows the user to visualize analysis results with multiple plots for all cancer types used in this analysis. Available plots are discussed below.
+Next, the 'Analyze' page allows the user to visualize analysis results with multiple plots for all cancer types used in this analysis. The user can choose from two database. Database 1 contains the human proteome with all instances of tryptophan amino acids in the proteome changed to all other amino acids except Arginine and Lysine. Database 2 includes addition to the canonical human proteome (UniPROT) with the substitutant tryptic peptides (length > 5 & < 50 amino acids) spanning tryptophan residue and tryptophan substituted to all other amino acids. 
+Available plots are discussed below.
 
 #### Barplots
 Barplots depicting cumulative number of W-Substitutants detected in tumour and adjacent normal tissue samples. User can choose whether to only plot cumulative number of W-Substitutants detected in all samples, tumour samples, or adjacent normal tissue samples.
@@ -73,7 +74,8 @@ Violin plots depicting the number of Subtitutants detected in lowly expressed (i
 Scatter contour plot depicting for every gene the number of W>F peptides when the gene is higher expressed (intensity > 0) on X-axis (High Class) and when the gene is lower expressed (intensity < 0) on Y-axis (Low Class). Contours depict the density of the distribution. W>F peptides in tumours and normal adjacent normal tissues are depicted in red and green, respectively.
 
 ### W>F Substitutants page
-Lastly, the page 'W>F Substitutants' allows the user to browse through and download actual detected peptides as well as their number of observations along with further details in table format. Furthermore, the user can choose to plot the number of occurences per peptide in tumour and tumor-adjacent normal tissues. 
+Lastly, the page 'W>F Substitutants' allows the user to browse through and download actual detected peptides as well as their number of observations along with further details in table format. In this module, the user can also choose from the two databases as described in the 'Analyze page' module.
+Furthermore, the user can choose to plot the number of occurences per peptide in tumour and tumor-adjacent normal tissues. 
 Peptide lists are available for download in .txt file format. 
 
 
